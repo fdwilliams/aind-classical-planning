@@ -5,7 +5,6 @@ from aimacode.utils import expr
 
 from layers import BaseActionLayer, BaseLiteralLayer, makeNoOp, make_node
 
-
 class ActionLayer(BaseActionLayer):
 
     def _inconsistent_effects(self, actionA, actionB):
@@ -139,6 +138,15 @@ class PlanningGraph:
         self.literal_layers = [layer]
         self.action_layers = []
 
+    #helper function for maxlevel and levelsum
+    def level_cost(self, goal):
+        #for all layers
+        for i, layer in enumerate(self.literal_layers):
+            #if the goal is in that layer
+            if goal in layer:
+                #return the index of that layer
+                return i
+
     def h_levelsum(self):
         """ Calculate the level sum heuristic for the planning graph
 
@@ -165,7 +173,14 @@ class PlanningGraph:
         Russell-Norvig 10.3.1 (3rd Edition)
         """
         # TODO: implement this function
-        raise NotImplementedError
+        #initial unoptimized version TODO: try expanding one level at a time later
+        costs = []
+        self.fill()
+
+        for goal in self.goal:
+            costs.append(self.level_cost(goal))
+
+        return sum(costs)
 
     def h_maxlevel(self):
         """ Calculate the max level heuristic for the planning graph
@@ -195,7 +210,14 @@ class PlanningGraph:
         WARNING: you should expect long runtimes using this heuristic with A*
         """
         # TODO: implement maxlevel heuristic
-        raise NotImplementedError
+        #initial unoptimized version TODO: try expanding one level at a time later
+        costs = []
+        self.fill()
+
+        for goal in self.goal:
+            costs.append(self.level_cost(goal))
+
+        return max(costs)
 
     def h_setlevel(self):
         """ Calculate the set level heuristic for the planning graph
@@ -220,7 +242,26 @@ class PlanningGraph:
         WARNING: you should expect long runtimes using this heuristic on complex problems
         """
         # TODO: implement setlevel heuristic
-        raise NotImplementedError
+        #initial unoptimized version TODO: try expanding one level at a time later
+        self.fill()
+        for i, layer in enumerate(self.literal_layers):
+            all_goals_met = True
+            for goal in self.goal:
+                if goal not in layer:
+                    all_goals_met = False
+                    break
+            if not all_goals_met:
+                continue
+
+            goals_are_mutex = False
+            for goal_a in self.goal:
+                for goal_b in self.goal:
+                    if layer.is_mutex(goal_a, goal_b):
+                        goals_are_mutex = True
+            if not goals_are_mutex:
+                return i
+
+        #TODO: what if goals are never met?
 
     ##############################################################################
     #                     DO NOT MODIFY CODE BELOW THIS LINE                     #
