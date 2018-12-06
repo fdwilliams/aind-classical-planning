@@ -19,8 +19,6 @@ class ActionLayer(BaseActionLayer):
         layers.ActionNode
         """
         # TODO: implement this function
-        #print()
-        #print(actionA)
         for ea in self.children[actionA]:
             for eb in self.children[actionB]:
                 if ea == ~eb:
@@ -173,14 +171,21 @@ class PlanningGraph:
         Russell-Norvig 10.3.1 (3rd Edition)
         """
         # TODO: implement this function
-        #initial unoptimized version TODO: try expanding one level at a time later
-        costs = []
-        self.fill()
+        unmet_goals = self.goal.copy()
+        cost = 0
 
-        for goal in self.goal:
-            costs.append(self.level_cost(goal))
+        i = 0
+        while not self._is_leveled:
+            for goal in unmet_goals.copy():
+                if goal in self.literal_layers[-1]:
+                    cost += i
+                    unmet_goals.remove(goal)
 
-        return sum(costs)
+            if len(unmet_goals) == 0:
+                return cost
+
+            self._extend()
+            i += 1
 
     def h_maxlevel(self):
         """ Calculate the max level heuristic for the planning graph
@@ -210,14 +215,18 @@ class PlanningGraph:
         WARNING: you should expect long runtimes using this heuristic with A*
         """
         # TODO: implement maxlevel heuristic
-        #initial unoptimized version TODO: try expanding one level at a time later
-        costs = []
-        self.fill()
+        i = 0
 
-        for goal in self.goal:
-            costs.append(self.level_cost(goal))
+        while not self._is_leveled:
+            all_goals_met = True
+            for goal in self.goal:
+                if goal not in self.literal_layers[-1]:
+                    all_goals_met = False
+            if all_goals_met:
+                return i
 
-        return max(costs)
+            self._extend()
+            i += 1
 
     def h_setlevel(self):
         """ Calculate the set level heuristic for the planning graph
@@ -242,15 +251,20 @@ class PlanningGraph:
         WARNING: you should expect long runtimes using this heuristic on complex problems
         """
         # TODO: implement setlevel heuristic
-        #initial unoptimized version TODO: try expanding one level at a time later
-        self.fill()
-        for i, layer in enumerate(self.literal_layers):
+
+        i = 0
+        while not self._is_leveled:
+            layer = self.literal_layers[-1]
+
             all_goals_met = True
             for goal in self.goal:
                 if goal not in layer:
                     all_goals_met = False
                     break
+
             if not all_goals_met:
+                self._extend()
+                i += 1
                 continue
 
             goals_are_mutex = False
@@ -258,10 +272,14 @@ class PlanningGraph:
                 for goal_b in self.goal:
                     if layer.is_mutex(goal_a, goal_b):
                         goals_are_mutex = True
-            if not goals_are_mutex:
-                return i
+                        break
 
-        #TODO: what if goals are never met?
+            if goals_are_mutex:
+                self._extend()
+                i += 1
+                continue
+
+            return i
 
     ##############################################################################
     #                     DO NOT MODIFY CODE BELOW THIS LINE                     #
