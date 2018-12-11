@@ -70,7 +70,7 @@
 | `astar_search` | `h_unmet_goals` | 14 | 34330 | 34332 | 328509 | 57.4568
 | `astar_search` | `h_pg_levelsum` | 15 | 1208 | 1210 | 12210 | 1342.2847
 
-### Analysis
+## Analysis
 When running the 5 algorithms (breadth-first, greedy best-first with `h_unmet_goals` and `h_pg_levelsum`, and A* with `h_unmet_goals` and `h_pg_levelsum`) across each of the 4 problems, the following average number of nodes were expanded: Problem 1 (20 actions): 26.8, Problem 2 (72 actions): 1238.6, Problem 3 (88 actions): 4481.8, and Problem 4 (104 actions): 27064.  As the number of actions increases with each problem, the number of node expansions seems to increase either polynomially or exponentially.  Similarly, across the 4 problems, the following average run times were observed: Problem 1: 0.15358s, Problem 2: 26.7573s, Problem 3: 64.8734s, Problem 4: 314.085s.  Run time seems to increase polynomially with the number of actions in the problem domain.  `breadth_first_search` will always be optimal if the path cost is non-decreasing.  `astar_search` with `h_unmet_goals` was also optimal in each of the 4 problems.  `depth_first_graph_search` was non-optimal in the first two problems, and would most likely be non-optimal in the other two problems if attempted.
 
 #### Which algorithm or algorithms would be most appropriate for planning in a very restricted domain (i.e., one that has only a few actions) and needs to operate in real time?
